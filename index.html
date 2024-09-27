@@ -13,7 +13,7 @@
       width: 30px;
       height: 5px;
       background-color: limegreen;
-      box-shadow: 0px 0px 10px 2px limegreen;  /* Initial green glow */
+      box-shadow: 0px 0px 10px 2px limegreen;
       transition: all 0.3s ease;
       cursor: pointer;
       z-index: 10000;
@@ -26,11 +26,11 @@
       position: fixed;
       right: 0;
       top: 20px;
-      background-color: rgba(255, 255, 255, 0.1);  /* Transparent background */
-      border: 1px solid rgba(255, 255, 255, 0.1);  /* Semi-transparent border */
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       padding: 10px;
       z-index: 9999;
-      text-align: right;  /* Align text and buttons to the right */
+      text-align: right;
     }
 
     /* Styling for buttons with padding and neon blue glow */
@@ -48,23 +48,73 @@
     }
 
     #dropdownMenu button:hover {
-      background-color: #2a2a2a;  /* Darker gray */
-      box-shadow: 0px 0px 15px 2px cyan;  /* Neon blue glow */
+      background-color: #2a2a2a;
+      box-shadow: 0px 0px 15px 2px cyan;
     }
 
-    /* Overlay styling */
+    /* Container for iframe content (games, hacks, ai) */
+    .content-container {
+      display: none;
+      position: fixed; /* Changed to fixed to cover entire viewport */
+      top: 0;
+      left: 0;
+      width: 100vw; /* Full width */
+      height: 100vh; /* Full height */
+      background-color: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 9998; /* Below the glow bar */
+    }
+
+    /* Style for iframe */
+    iframe {
+      width: 100%;  /* Full width */
+      height: 100%; /* Full height */
+      border: none; /* Remove default border */
+      border-radius: 10px;
+    }
+
+    /* Back button styling */
+    .back-btn {
+      position: absolute; /* Absolute positioning */
+      bottom: 20px; /* Distance from the bottom */
+      right: 20px; /* Distance from the right */
+      background-color: #383838;
+      color: white;
+      border: 2px solid rgba(0, 255, 255, 1);
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: box-shadow 0.3s ease, background-color 0.3s ease;
+      border-radius: 20px;
+    }
+
+    .back-btn:hover {
+      background-color: #2a2a2a;
+      box-shadow: 0px 0px 15px 2px cyan;
+    }
+
+    /* Fix the overlay to cover the entire viewport */
     #overlay {
       display: none;
       position: fixed;
       top: 0;
       left: 0;
-      width: 100vw;
-      height: 100vh;
+      right: 0;
+      bottom: 0;
+      width: 100vw;  /* Ensure it covers full width */
+      height: 100vh; /* Ensure it covers full height */
       background-color: rgba(0, 0, 0, 0.8);
       color: #fff;
       justify-content: center;
       align-items: center;
       z-index: 9999;
+      overflow: hidden; /* Prevent any content overflow */
+    }
+
+    /* Prevent body scrolling when overlay is visible */
+    body.no-scroll {
+      overflow: hidden; /* Prevent scrolling */
     }
   </style>
 </head>
@@ -79,18 +129,38 @@
     </div>
   </div>
 
+  <!-- Games Container -->
+  <div id="gamesContainer" class="content-container">
+    <iframe id="gamesIframe" src="https://roblox-unblock.github.io/"></iframe>
+    <button class="back-btn back-btn-games">Back</button>
+  </div>
+
+  <!-- Hacks Container -->
+  <div id="hacksContainer" class="content-container">
+    <iframe id="hacksIframe" src="https://docs.google.com/document/d/1dgIk3hUw5GxBxe4EUSTADGDv2tDuiFoNPE0-jwQE86c/edit?usp=sharing"></iframe>
+    <button class="back-btn back-btn-hacks">Back</button>
+  </div>
+
+  <!-- AI Container -->
+  <div id="aiContainer" class="content-container">
+    <iframe id="aiIframe" src="https://blackbox.ai"></iframe>
+    <button class="back-btn back-btn-ai">Back</button>
+  </div>
+
   <!-- Overlay Element -->
-  <body>
   <div id="overlay">
-    <iframe id="iframe1" src="placeholder1.html"></iframe>
+    <iframe id="overlayIframe"></iframe>
     <button id="closeOverlay">Close</button>
   </div>
-  
+
   <script>
     let barState = 'active'; // Active or collapsed
     const glowBar = document.getElementById('glowBar');
     const dropdownMenu = document.getElementById('dropdownMenu');
     const overlay = document.getElementById('overlay');
+    const gamesContainer = document.getElementById('gamesContainer');
+    const hacksContainer = document.getElementById('hacksContainer');
+    const aiContainer = document.getElementById('aiContainer');
     let isMenuLocked = false;
 
     // Keep dropdown visible when hovering over bar or dropdown
@@ -109,56 +179,82 @@
         if (!dropdownMenu.matches(':hover')) {
           dropdownMenu.style.display = 'none';
         }
-      }, 100);  // Slight delay to allow moving to the menu
+      }, 100);
     });
 
     dropdownMenu.addEventListener('mouseout', () => {
       dropdownMenu.style.display = 'none';
     });
 
-    // Create overlay functionality
-    function showOverlay(content) {
+    // Function to handle showing the overlay and prevent scrolling
+    function showOverlay() {
       overlay.style.display = 'flex';
-      overlay.querySelector('h1').textContent = content;
+      document.body.classList.add('no-scroll'); // Prevent scrolling
     }
 
+    // Function to hide the overlay and restore scrolling
     function hideOverlay() {
       overlay.style.display = 'none';
+      document.body.classList.remove('no-scroll'); // Allow scrolling again
     }
 
     // Close overlay
     document.getElementById('closeOverlay').onclick = hideOverlay;
 
-    // Button actions
+    // Button actions to show different containers
     document.getElementById('gamesBtn').onclick = () => {
-      showOverlay();
-      document.getElementById('iframe1').src = 'games.html';
+      hideOverlay();
+      hideAllContainers();
+      gamesContainer.style.display = 'flex';
     };
 
     document.getElementById('hacksBtn').onclick = () => {
-      showOverlay();
-      document.getElementById('iframe1').src = 'https://docs.google.com/document/d/1dgIk3hUw5GxBxe4EUSTADGDv2tDuiFoNPE0-jwQE86c/edit?usp=sharing';
+      hideOverlay();
+      hideAllContainers();
+      hacksContainer.style.display = 'flex';
     };
 
     document.getElementById('aiBtn').onclick = () => {
-      showOverlay();
-      document.getElementById('iframe1').src = 'https://www.blackbox.ai/';
+      hideOverlay();
+      hideAllContainers();
+      aiContainer.style.display = 'flex';
     };
+
+    // Handle back button clicks to hide containers
+    document.querySelector('.back-btn-games').onclick = () => {
+      gamesContainer.style.display = 'none';
+    };
+
+    document.querySelector('.back-btn-hacks').onclick = () => {
+      hacksContainer.style.display = 'none';
+    };
+
+    document.querySelector('.back-btn-ai').onclick = () => {
+      aiContainer.style.display = 'none';
+    };
+
+    // Function to hide all content containers
+    function hideAllContainers() {
+      gamesContainer.style.display = 'none';
+      hacksContainer.style.display = 'none';
+      aiContainer.style.display = 'none';
+    }
 
     // Function to toggle the bar state
     function toggleBar() {
       if (barState === 'active') {
         glowBar.style.width = '5px';
         glowBar.style.backgroundColor = 'red';
-        glowBar.style.boxShadow = '0px 0px 5px 1px red';  // Change glow to red
+        glowBar.style.boxShadow = '0px 0px 5px 1px red';
         hideOverlay();
+        hideAllContainers();
         dropdownMenu.style.display = 'none';
         isMenuLocked = true;
         barState = 'collapsed';
       } else {
         glowBar.style.width = '30px';
         glowBar.style.backgroundColor = 'limegreen';
-        glowBar.style.boxShadow = '0px 0px 10px 2px limegreen';  // Change glow to green
+        glowBar.style.boxShadow = '0px 0px 10px 2px limegreen';
         isMenuLocked = false;
         barState = 'active';
       }
