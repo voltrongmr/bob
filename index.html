@@ -13,36 +13,38 @@
       width: 30px;
       height: 5px;
       background-color: limegreen;
-      box-shadow: 0px 0px 10px 2px limegreen;
+      box-shadow: 0px 0px 10px 2px limegreen;  /* Initial green glow */
       transition: all 0.3s ease;
       cursor: pointer;
       z-index: 10000;
+      border-radius: 5px;
     }
 
     /* Dropdown menu with transparency */
     #dropdownMenu {
       display: none;
-      position: absolute;
+      position: fixed;
       right: 0;
       top: 20px;
       background-color: rgba(255, 255, 255, 0.1);  /* Transparent background */
-      border: 1px solid rgba(255, 255, 255, 0.3);  /* Semi-transparent border */
+      border: 1px solid rgba(255, 255, 255, 0.1);  /* Semi-transparent border */
       padding: 10px;
-      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
       z-index: 9999;
+      text-align: right;  /* Align text and buttons to the right */
     }
 
     /* Styling for buttons with padding and neon blue glow */
     #dropdownMenu button {
       display: block;
-      background-color: gray;
+      background-color: #383838;
       color: white;
-      border: none;
+      border: 2px solid rgba(0, 255, 255, 1);
       padding: 10px 20px;
-      margin: 10px 0;
+      margin: 10px 0 10px auto;
       font-size: 16px;
       cursor: pointer;
       transition: box-shadow 0.3s ease, background-color 0.3s ease;
+      border-radius: 20px;
     }
 
     #dropdownMenu button:hover {
@@ -78,11 +80,12 @@
   </div>
 
   <!-- Overlay Element -->
+  <body>
   <div id="overlay">
-    <h1></h1>
+    <iframe id="iframe1" src="placeholder1.html"></iframe>
     <button id="closeOverlay">Close</button>
   </div>
-
+  
   <script>
     let barState = 'active'; // Active or collapsed
     const glowBar = document.getElementById('glowBar');
@@ -127,15 +130,27 @@
     document.getElementById('closeOverlay').onclick = hideOverlay;
 
     // Button actions
-    document.getElementById('gamesBtn').onclick = () => showOverlay('Games Overlay');
-    document.getElementById('hacksBtn').onclick = () => showOverlay('Hacks Overlay');
-    document.getElementById('aiBtn').onclick = () => showOverlay('AI Overlay');
+    document.getElementById('gamesBtn').onclick = () => {
+      showOverlay();
+      document.getElementById('iframe1').src = 'games.html';
+    };
+
+    document.getElementById('hacksBtn').onclick = () => {
+      showOverlay();
+      document.getElementById('iframe1').src = 'https://docs.google.com/document/d/1dgIk3hUw5GxBxe4EUSTADGDv2tDuiFoNPE0-jwQE86c/edit?usp=sharing';
+    };
+
+    document.getElementById('aiBtn').onclick = () => {
+      showOverlay();
+      document.getElementById('iframe1').src = 'https://www.blackbox.ai/';
+    };
 
     // Function to toggle the bar state
     function toggleBar() {
       if (barState === 'active') {
         glowBar.style.width = '5px';
         glowBar.style.backgroundColor = 'red';
+        glowBar.style.boxShadow = '0px 0px 5px 1px red';  // Change glow to red
         hideOverlay();
         dropdownMenu.style.display = 'none';
         isMenuLocked = true;
@@ -143,6 +158,7 @@
       } else {
         glowBar.style.width = '30px';
         glowBar.style.backgroundColor = 'limegreen';
+        glowBar.style.boxShadow = '0px 0px 10px 2px limegreen';  // Change glow to green
         isMenuLocked = false;
         barState = 'active';
       }
