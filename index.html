@@ -258,8 +258,6 @@
       border: 2px solid #00ffff;
       overflow: hidden;
       z-index: 10;
-      transition: max-width 0.3s ease;
-      max-width: 300px;
     }
 
     .menu-item {
@@ -269,6 +267,7 @@
       position: relative;
       z-index: 1;
       transition: color 0.3s ease;
+      white-space: nowrap;
     }
 
     .menu-item:hover {
@@ -285,21 +284,29 @@
       bottom: 0;
       background: #444;
       border-radius: 9999px;
-      transition: left 0.3s ease, width 0.3s ease;
+      transition: all 0.4s ease;
       pointer-events: none;
       z-index: 0;
+    }
+
+    .menu-item.active[data-section="AI"]:hover ~ .menu-indicator {
+      width: 300px !important;
+    }
+
+    .menu-item[data-section="AI"] {
       display: flex;
       align-items: center;
-      justify-content: flex-end;
-      overflow: hidden;
+      gap: 1em;
     }
 
     .ai-models {
+      font-size: 0.9em;
+      color: #888;
       display: none;
-      font-size: 0.8em;
-      color: #888888;
-      padding-right: 0.5em;
-      white-space: nowrap;
+    }
+
+    .menu-item.active[data-section="AI"]:hover .ai-models {
+      display: inline;
     }
 
     .ai-models span {
@@ -308,19 +315,11 @@
     }
 
     .ai-models span.active {
-      color: #ffffff;
+      color: #fff;
     }
 
-    .menu-item.ai.active:hover .menu-indicator {
-      width: 250px !important;
-    }
-
-    .menu-item.ai.active:hover .ai-models {
-      display: block;
-    }
-
-    .menu-item.ai.active:hover ~ #island-menu {
-      max-width: 400px;
+    .ai-models span:hover {
+      color: #00ffff;
     }
 
     #teacher-btn {
@@ -420,16 +419,17 @@
       </div>
     </div>
     <div id="island-menu">
-      <div class="menu-indicator">
+      <div class="menu-indicator"></div>
+      <div class="menu-item active" data-section="AI" tabindex="0">
+        AI
         <div class="ai-models">
           <span data-model="blackbox" class="active">Blackbox</span>|
           <span data-model="deep">Deep</span>|
           <span data-model="gemini">Gemini</span>
         </div>
       </div>
-      <div class="menu-item ai active" tabindex="0">AI</div>
-      <div class="menu-item" tabindex="0">Games</div>
-      <div class="menu-item" tabindex="0">Hacks</div>
+      <div class="menu-item" data-section="Games" tabindex="0">Games</div>
+      <div class="menu-item" data-section="Hacks" tabindex="0">Hacks</div>
     </div>
     <button id="teacher-btn">Teacher</button>
   </div>
@@ -439,6 +439,8 @@
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+
+    let currentAIModel = "blackbox"; // Track current AI model
 
     const particles = [];
     class Particle {
@@ -510,8 +512,6 @@
       }
     ];
 
-    let currentAIModel = "blackbox"; // Track current AI model
-
     function showNotification(message, type = 'info') {
       const notification = document.createElement('div');
       notification.className = `notification ${type}`;
@@ -568,11 +568,11 @@
       element.classList.add('active');
       moveIndicatorTo(element);
       updateIframeDisplay();
-      showNotification(`Switched to ${element.textContent}`, "info");
+      showNotification(`Switched to ${element.dataset.section}`, "info");
     }
 
     function updateIframeDisplay() {
-      const active = document.querySelector('.menu-item.active').textContent.trim();
+      const active = document.querySelector('.menu-item.active').dataset.section;
       const iframeContainer = document.getElementById("iframe-container");
       const bookmarkletContainer = document.getElementById("bookmarklet-container");
       const iframe = document.getElementById("main-iframe");
@@ -641,15 +641,6 @@
       indicator.style.width = `${width}px`;
     }
 
-    function selectAIModel(model) {
-      currentAIModel = model;
-      document.querySelectorAll('.ai-models span').forEach(span => {
-        span.classList.toggle('active', span.dataset.model === model);
-      });
-      updateIframeDisplay();
-      showNotification(`Switched to ${model.charAt(0).toUpperCase() + model.slice(1)}`, "info");
-    }
-
     window.addEventListener('load', () => {
       const active = document.querySelector('.menu-item.active');
       if (active) moveIndicatorTo(active);
@@ -670,13 +661,6 @@
       });
     });
 
-    document.querySelectorAll(".ai-models span").forEach(span => {
-      span.addEventListener("click", (e) => {
-        e.stopPropagation();
-        selectAIModel(span.dataset.model);
-      });
-    });
-
     document.getElementById("teacher-btn").addEventListener("click", () => {
       showNotification("Redirecting to Google Classroom", "info");
       window.location.href = "https://classroom.google.com/";
@@ -687,6 +671,19 @@
       document.getElementById("iframe-container").innerHTML =
         "<p style='color: #ff5555; text-align: center;'>Failed to load content. Please try again later.</p>";
       showNotification("Failed to load content", "error");
+    });
+
+    // Add AI model selection handling
+    document.querySelectorAll('.ai-models span').forEach(span => {
+      span.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentAIModel = span.dataset.model;
+        document.querySelectorAll('.ai-models span').forEach(s => {
+          s.classList.toggle('active', s === span);
+        });
+        updateIframeDisplay();
+        showNotification(`Switched to ${span.textContent}`, "info");
+      });
     });
   </script>
 </body>
